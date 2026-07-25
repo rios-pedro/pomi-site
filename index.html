@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomi — A quiet timer for your menu bar</title>
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon-64.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --ink: #17140f;
+    --muted: #8c8478;
+    --line: #e6e2d9;
+    --accent: #e8483a;
+    --accent-hover: #d13c2f;
+    --accent-tint: #fbeae6;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .serif {
+    font-family: "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  }
+
+  .mono {
+    font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  }
+
+  a { color: inherit; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(247,246,243,0.78);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .nav-logo .mark {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .nav-logo span {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .nav-links a:not(.nav-cta) {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:not(.nav-cta):hover { color: var(--ink); }
+
+  .lang-toggle {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .lang-toggle:hover { border-color: var(--ink); color: var(--ink); }
+
+  .nav-cta {
+    background: var(--ink) !important;
+    color: var(--bg) !important;
+    padding: 9px 20px;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: opacity 0.2s;
+  }
+
+  .nav-cta:hover { opacity: 0.82; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 160px 24px 100px;
+    position: relative;
+  }
+
+  .breath-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px; height: 900px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .breath-ring svg { width: 100%; height: 100%; }
+  .breath-ring circle {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 1;
+  }
+  .breath-ring .b2 { animation: breathe 8s ease-in-out infinite; transform-origin: center; }
+  .breath-ring .b3 { animation: breathe 8s ease-in-out infinite 1.2s; transform-origin: center; }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.94); opacity: 0.4; }
+    50% { transform: scale(1); opacity: 0.9; }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 620px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-tint);
+    padding: 7px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -1px;
+    margin-bottom: 22px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero .description {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 440px;
+    margin: 0 auto 40px;
+  }
+
+  .buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 30px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+
+  .btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: #000; transform: translateY(-1px); box-shadow: 0 10px 26px rgba(23,20,15,0.22); }
+
+  .btn-ghost {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { border-color: var(--ink); transform: translateY(-1px); }
+
+  .meta {
+    margin-top: 34px;
+    font-size: 13px;
+    color: #b3ac9f;
+  }
+
+  /* ── APP MOCKUP ── */
+  .mockup-wrap {
+    position: relative;
+    z-index: 1;
+    margin-top: 64px;
+  }
+
+  .menubar-strip {
+    width: 380px;
+    max-width: 90vw;
+    height: 30px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--line);
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 14px;
+    gap: 12px;
+    margin: 0 auto;
+    backdrop-filter: blur(10px);
+  }
+
+  .menubar-strip .pill {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .menubar-strip .pomi-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--ink);
+    font-family: "JetBrains Mono", monospace;
+    background: var(--surface);
+    padding: 3px 9px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+  }
+
+  .device-card {
+    width: 260px;
+    margin: 0 auto;
+    background: #171512;
+    border-radius: 0 0 16px 16px;
+    padding: 26px 20px 22px;
+    box-shadow: 0 40px 90px rgba(23,20,15,0.28), 0 1px 0 rgba(255,255,255,0.04) inset;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .ring-demo {
+    position: relative;
+    width: 118px; height: 118px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .ring-demo svg { position: absolute; inset: -20px; width: 158px; height: 158px; transform: scale(0.65); }
+  .ring-demo .track { fill: none; stroke: #2a2620; stroke-width: 4; }
+  .ring-demo .fill {
+    fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round;
+    stroke-dasharray: 553; stroke-dashoffset: 165;
+    transform: rotate(-90deg); transform-origin: center;
+  }
+
+  .ring-demo .time {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: #f3eee3;
+    letter-spacing: -0.5px;
+  }
+
+  .device-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #6b6459;
+    font-weight: 600;
+  }
+
+  /* ── SECTIONS ── */
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-size: clamp(28px, 3.6vw, 38px);
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 18px;
+  }
+
+  .section-subtitle {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 480px;
+  }
+
+  /* ── PHILOSOPHY ── */
+  .philosophy {
+    padding: 130px 40px;
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .philosophy p {
+    font-size: clamp(24px, 3vw, 30px);
+    line-height: 1.5;
+    letter-spacing: -0.3px;
+    color: var(--ink);
+  }
+
+  .philosophy .sig {
+    margin-top: 28px;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── FEATURES ── */
+  .features {
+    padding: 60px 40px 130px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .features-header { margin-bottom: 56px; }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    padding: 34px 28px;
+    transition: background 0.2s ease;
+  }
+
+  .feature-card:hover { background: var(--accent-tint); }
+
+  .feature-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .feature-icon svg {
+    width: 18px; height: 18px;
+    stroke: var(--ink); fill: none;
+    stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
+  .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.55; }
+
+  /* ── FAQ ── */
+  .faq {
+    padding: 100px 40px 130px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .faq-header { margin-bottom: 44px; }
+
+  .faq-item { border-bottom: 1px solid var(--line); }
+
+  .faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    padding: 22px 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+  }
+
+  .faq-question svg {
+    width: 17px; height: 17px; flex-shrink: 0;
+    transition: transform 0.3s ease;
+    stroke: var(--muted);
+  }
+
+  .faq-item.open .faq-question svg { transform: rotate(45deg); }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+
+  .faq-item.open .faq-answer { max-height: 200px; padding-bottom: 22px; }
+  .faq-answer p { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 560px; }
+
+  /* ── CTA ── */
+  .cta-band {
+    padding: 110px 40px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+
+  .cta-band h2 {
+    font-size: clamp(30px, 4vw, 42px);
+    font-weight: 500;
+    letter-spacing: -0.8px;
+    margin-bottom: 32px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 30px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #b3ac9f;
+  }
+
+  .footer-left .mark {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .footer-left a { color: var(--muted); text-decoration: none; }
+  .footer-left a:hover { color: var(--ink); }
+  .footer-right a { color: #b3ac9f; text-decoration: none; font-size: 12px; }
+  .footer-right a:hover { color: var(--ink); }
+
+  /* ── REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  .fade-in { opacity: 0; transform: translateY(14px); animation: fadeIn 0.8s ease forwards; }
+  .fade-in-d1 { animation-delay: 0.05s; }
+  .fade-in-d2 { animation-delay: 0.12s; }
+  .fade-in-d3 { animation-delay: 0.2s; }
+  .fade-in-d4 { animation-delay: 0.3s; }
+  .fade-in-d5 { animation-delay: 0.4s; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .breath-ring .b2, .breath-ring .b3, .fade-in, .reveal { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .nav-links a:not(.nav-cta):not(.lang-toggle) { display: none; }
+    .hero { padding: 130px 20px 70px; }
+    .hero h1 { font-size: 38px; }
+    .breath-ring { width: 500px; height: 500px; }
+    .buttons { flex-direction: column; width: 100%; max-width: 300px; margin: 0 auto 20px; }
+    .btn { width: 100%; justify-content: center; }
+    .philosophy { padding: 90px 24px; }
+    .features { padding: 40px 20px 90px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .faq { padding: 70px 20px 90px; }
+    .cta-band { padding: 80px 20px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="images/logo-64.png" alt="Pomi" class="mark">
+      <span>Pomi</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" data-i18n="nav_features">Features</a>
+      <a href="#faq">FAQ</a>
+      <button class="lang-toggle" id="langToggle" title="Switch language">PT</button>
+      <a href="#hero" class="nav-cta" data-i18n="nav_download">Download</a>
+    </div>
+  </nav>
+
+  <section class="hero" id="hero">
+    <div class="breath-ring">
+      <svg viewBox="0 0 900 900">
+        <circle class="b2" cx="450" cy="450" r="360"></circle>
+        <circle class="b3" cx="450" cy="450" r="300"></circle>
+      </svg>
+    </div>
+
+    <div class="hero-content">
+      <div class="eyebrow fade-in">
+        <span data-i18n="eyebrow">For macOS</span>
+      </div>
+
+      <h1 class="serif fade-in fade-in-d1" data-i18n="hero_title">Focus, without <em>the noise</em>.</h1>
+
+      <p class="description fade-in fade-in-d2" data-i18n="hero_description">
+        Pomi is a Pomodoro timer that lives quietly in your menu bar.
+        No dock icon, no clutter, no accounts — just time, kept honestly.
+      </p>
+
+      <div class="buttons fade-in fade-in-d3">
+        <a href="./downloads/pomi.dmg" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <span data-i18n="btn_download">Download for Mac</span>
+        </a>
+        <a href="#features" class="btn btn-ghost">
+          <span data-i18n="btn_learn">See how it works</span>
+        </a>
+      </div>
+
+      <p class="meta fade-in fade-in-d4" data-i18n="hero_meta">macOS 12+ · Free · No account required</p>
+    </div>
+
+    <div class="mockup-wrap fade-in fade-in-d5">
+      <div class="menubar-strip">
+        <span class="pomi-pill">
+          <img src="images/favicon-32.png" alt="" width="12" height="12" style="border-radius: 3px;">
+          18:24
+        </span>
+      </div>
+      <div class="device-card">
+        <div class="ring-demo">
+          <svg viewBox="0 0 200 200">
+            <circle class="track" cx="100" cy="100" r="88"></circle>
+            <circle class="fill" cx="100" cy="100" r="88"></circle>
+          </svg>
+          <span class="time">18:24</span>
+        </div>
+        <span class="device-label" data-i18n="mockup_label">Focus session</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="philosophy" id="philosophy">
+    <p class="serif reveal" data-i18n="philosophy_quote">
+      "A good timer isn't seen. It's felt — a quiet pulse in the corner of your day, asking nothing of you but attention."
+    </p>
+    <p class="sig reveal" data-i18n="philosophy_sig">— the idea behind Pomi</p>
+  </section>
+
+  <section class="features" id="features">
+    <div class="features-header">
+      <p class="section-label reveal" data-i18n="nav_features">Features</p>
+      <h2 class="section-title serif reveal" data-i18n="features_title">Built to disappear<br>into your workflow.</h2>
+      <p class="section-subtitle reveal" data-i18n="features_subtitle">Every decision in Pomi favors calm over cleverness.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg>
+        </div>
+        <h3 data-i18n="f1_title">Menu bar only</h3>
+        <p data-i18n="f1_desc">No dock icon, no window clutter. Pomi opens where you need it and disappears the moment you don't.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h3 data-i18n="f2_title">A ring, not a number</h3>
+        <p data-i18n="f2_desc">Time is shown as a shape that shrinks, not just digits that count down. You feel the session ending before you read it.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 12h6M12 9v6"/></svg>
+        </div>
+        <h3 data-i18n="f3_title">Presets that fit</h3>
+        <p data-i18n="f3_desc">5, 15, 25, 45 — or drag the slider to anything in between. No setup screens, no settings to dig through.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <h3 data-i18n="f4_title">Native notifications</h3>
+        <p data-i18n="f4_desc">A single, quiet system notification when time's up. No sound you didn't choose, no pop-up you didn't ask for.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg>
+        </div>
+        <h3 data-i18n="f5_title">Closes on its own</h3>
+        <p data-i18n="f5_desc">Click anywhere outside, or switch apps — the window hides itself. You never have to think about closing it.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+        </div>
+        <h3 data-i18n="f6_title">Native and light</h3>
+        <p data-i18n="f6_desc">Built with Tauri, not Electron. Pomi starts instantly and stays out of your battery's way.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2 class="serif reveal" data-i18n="cta_title">Give your focus a home.</h2>
+    <div class="buttons reveal">
+      <a href="./downloads/pomi.dmg" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <span data-i18n="btn_download">Download for Mac</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="faq-header">
+      <p class="section-label reveal">FAQ</p>
+      <h2 class="section-title serif reveal" data-i18n="faq_title">A few honest answers.</h2>
+    </div>
+
+    <div class="faq-item reveal">
+      <button class="faq-question">
+        <span data-i18n="faq1_q">Is Pomi free?</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer"><p data-i18n="faq1_a">Yes. No trial, no subscription, no feature paywall. Pomi is a small, complete tool.</p></div>
+    </div>
+
+    <div class="faq-item reveal">
+      <button class="faq-question">
+        <span data-i18n="faq2_q">Does it need an account?</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer"><p data-i18n="faq2_a">No. Download it, open it, start a session. Nothing is collected or synced.</p></div>
+    </div>
+
+    <div class="faq-item reveal">
+      <button class="faq-question">
+        <span data-i18n="faq3_q">Where did the name come from?</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer"><p data-i18n="faq3_a">Pomi borrows its spirit from the onigiri — small, simple, made to be picked up and put down without ceremony.</p></div>
+    </div>
+
+    <div class="faq-item reveal">
+      <button class="faq-question">
+        <span data-i18n="faq4_q">Will it get more features over time?</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-answer"><p data-i18n="faq4_a">Carefully, and only if they earn their place. Pomi's job is to stay simple, not to grow for its own sake.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-left">
+      <img src="images/logo-64.png" alt="Pomi" class="mark">
+      <span>© 2026 Pomi · <a href="https://pedroriosdev.vercel.app/" target="_blank">Pedro Rios</a></span>
+    </div>
+    <div class="footer-right">
+      <a href="https://github.com/rios-pedro" target="_blank">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    var translations = {
+      en: {
+        nav_features: 'Features',
+        nav_download: 'Download',
+        eyebrow: 'For macOS',
+        hero_title: 'Focus, without <em>the noise</em>.',
+        hero_description: 'Pomi is a Pomodoro timer that lives quietly in your menu bar. No dock icon, no clutter, no accounts — just time, kept honestly.',
+        btn_download: 'Download for Mac',
+        btn_learn: 'See how it works',
+        hero_meta: 'macOS 12+ · Free · No account required',
+        mockup_label: 'Focus session',
+        philosophy_quote: '"A good timer isn\'t seen. It\'s felt — a quiet pulse in the corner of your day, asking nothing of you but attention."',
+        philosophy_sig: '— the idea behind Pomi',
+        features_title: 'Built to disappear<br>into your workflow.',
+        features_subtitle: 'Every decision in Pomi favors calm over cleverness.',
+        f1_title: 'Menu bar only',
+        f1_desc: 'No dock icon, no window clutter. Pomi opens where you need it and disappears the moment you don\'t.',
+        f2_title: 'A ring, not a number',
+        f2_desc: 'Time is shown as a shape that shrinks, not just digits that count down. You feel the session ending before you read it.',
+        f3_title: 'Presets that fit',
+        f3_desc: '5, 15, 25, 45 — or drag the slider to anything in between. No setup screens, no settings to dig through.',
+        f4_title: 'Native notifications',
+        f4_desc: 'A single, quiet system notification when time\'s up. No sound you didn\'t choose, no pop-up you didn\'t ask for.',
+        f5_title: 'Closes on its own',
+        f5_desc: 'Click anywhere outside, or switch apps — the window hides itself. You never have to think about closing it.',
+        f6_title: 'Native and light',
+        f6_desc: 'Built with Tauri, not Electron. Pomi starts instantly and stays out of your battery\'s way.',
+        cta_title: 'Give your focus a home.',
+        faq_title: 'A few honest answers.',
+        faq1_q: 'Is Pomi free?',
+        faq1_a: 'Yes. No trial, no subscription, no feature paywall. Pomi is a small, complete tool.',
+        faq2_q: 'Does it need an account?',
+        faq2_a: 'No. Download it, open it, start a session. Nothing is collected or synced.',
+        faq3_q: 'Where did the name come from?',
+        faq3_a: 'Pomi borrows its spirit from the onigiri — small, simple, made to be picked up and put down without ceremony.',
+        faq4_q: 'Will it get more features over time?',
+        faq4_a: 'Carefully, and only if they earn their place. Pomi\'s job is to stay simple, not to grow for its own sake.'
+      },
+      pt: {
+        nav_features: 'Recursos',
+        nav_download: 'Baixar',
+        eyebrow: 'Para macOS',
+        hero_title: 'Foco, sem <em>o ruído</em>.',
+        hero_description: 'Pomi é um timer Pomodoro que vive discretamente na sua barra de menu. Sem ícone no dock, sem bagunça, sem contas — só tempo, medido com honestidade.',
+        btn_download: 'Baixar para Mac',
+        btn_learn: 'Ver como funciona',
+        hero_meta: 'macOS 12+ · Grátis · Sem necessidade de conta',
+        mockup_label: 'Sessão de foco',
+        philosophy_quote: '"Um bom timer não se vê. Se sente — um pulso quieto no canto do seu dia, que não pede nada além de atenção."',
+        philosophy_sig: '— a ideia por trás do Pomi',
+        features_title: 'Feito para desaparecer<br>no seu fluxo de trabalho.',
+        features_subtitle: 'Cada decisão no Pomi favorece a calma em vez da esperteza.',
+        f1_title: 'Só na barra de menu',
+        f1_desc: 'Sem ícone no dock, sem janelas espalhadas. O Pomi abre onde você precisa e some quando você não precisa mais.',
+        f2_title: 'Um anel, não um número',
+        f2_desc: 'O tempo aparece como uma forma que encolhe, não só dígitos contando. Você sente a sessão terminando antes de ler.',
+        f3_title: 'Presets que encaixam',
+        f3_desc: '5, 15, 25, 45 — ou arraste o slider pra qualquer valor entre eles. Sem telas de configuração pra vasculhar.',
+        f4_title: 'Notificações nativas',
+        f4_desc: 'Uma única notificação discreta do sistema quando o tempo acaba. Sem som que você não escolheu, sem pop-up que você não pediu.',
+        f5_title: 'Fecha sozinho',
+        f5_desc: 'Clica em qualquer lugar fora, ou troca de app — a janela se esconde sozinha. Você nunca precisa pensar em fechar.',
+        f6_title: 'Nativo e leve',
+        f6_desc: 'Feito com Tauri, não Electron. O Pomi abre na hora e não pesa na sua bateria.',
+        cta_title: 'Dê um lar pro seu foco.',
+        faq_title: 'Algumas respostas honestas.',
+        faq1_q: 'O Pomi é gratuito?',
+        faq1_a: 'Sim. Sem teste grátis, sem assinatura, sem recurso trancado. O Pomi é uma ferramenta pequena e completa.',
+        faq2_q: 'Precisa de conta?',
+        faq2_a: 'Não. Baixa, abre, começa uma sessão. Nada é coletado ou sincronizado.',
+        faq3_q: 'De onde veio o nome?',
+        faq3_a: 'O Pomi empresta o espírito do onigiri — pequeno, simples, feito pra ser pego e largado sem cerimônia.',
+        faq4_q: 'Vai ganhar mais recursos com o tempo?',
+        faq4_a: 'Com cuidado, e só se merecerem o espaço. O trabalho do Pomi é continuar simples, não crescer por crescer.'
+      }
+    };
+
+    var currentLang = 'en';
+
+    function detectLanguage() {
+      var lang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+      return lang.startsWith('pt') ? 'pt' : 'en';
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      var strings = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (strings[key]) el.innerHTML = strings[key];
+      });
+      var toggle = document.getElementById('langToggle');
+      toggle.textContent = lang === 'pt' ? 'EN' : 'PT';
+    }
+
+    document.getElementById('langToggle').addEventListener('click', function() {
+      setLanguage(currentLang === 'en' ? 'pt' : 'en');
+    });
+
+    setLanguage(detectLanguage());
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = btn.parentElement;
+        var wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+        if (!wasOpen) item.classList.add('open');
+      });
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+      a.addEventListener('click', function(e) {
+        var target = a.getAttribute('href');
+        if (target.length > 1) {
+          var t = document.querySelector(target);
+          if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
