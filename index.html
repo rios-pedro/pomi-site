@@ -200,13 +200,81 @@
     margin: 0 auto 40px;
   }
 
-  .buttons {
+  .install-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .terminal-install {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .terminal-box {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 6px 6px 6px 16px;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(23, 20, 15, 0.05);
+  }
+
+  .terminal-box .prompt {
+    color: var(--muted);
+    font-family: var(--mono, "JetBrains Mono", monospace);
+    margin-right: 12px;
+    user-select: none;
+  }
+
+  .terminal-box code {
+    font-family: var(--mono, "JetBrains Mono", monospace);
+    font-size: 13px;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    text-align: left;
+  }
+
+  .copy-btn {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  .copy-btn:hover {
+    background: var(--line);
+  }
+
+  .copy-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .terminal-hint {
+    font-size: 12px;
+    color: var(--muted);
   }
 
   .btn {
@@ -223,11 +291,6 @@
     border: none;
     font-family: inherit;
   }
-
-  .btn svg { width: 17px; height: 17px; flex-shrink: 0; }
-
-  .btn-primary { background: var(--ink); color: var(--bg); }
-  .btn-primary:hover { background: #000; transform: translateY(-1px); box-shadow: 0 10px 26px rgba(23,20,15,0.22); }
 
   .btn-ghost {
     background: var(--surface);
@@ -467,6 +530,9 @@
     padding: 110px 40px;
     text-align: center;
     border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .cta-band h2 {
@@ -529,7 +595,7 @@
     .hero { padding: 130px 20px 70px; }
     .hero h1 { font-size: 38px; }
     .breath-ring { width: 500px; height: 500px; }
-    .buttons { flex-direction: column; width: 100%; max-width: 300px; margin: 0 auto 20px; }
+    .install-section { flex-direction: column; width: 100%; max-width: 320px; margin: 0 auto 20px; }
     .btn { width: 100%; justify-content: center; }
     .philosophy { padding: 90px 24px; }
     .features { padding: 40px 20px 90px; }
@@ -575,11 +641,17 @@
         No dock icon, no clutter, no accounts — just time, kept honestly.
       </p>
 
-      <div class="buttons fade-in fade-in-d3">
-        <a href="./downloads/pomi.dmg" class="btn btn-primary">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-          <span data-i18n="btn_download">Download for Mac</span>
-        </a>
+      <div class="install-section fade-in fade-in-d3">
+        <div class="terminal-install">
+          <div class="terminal-box">
+            <span class="prompt">$</span>
+            <code>curl -fsSL https://raw.githubusercontent.com/rios-pedro/pomi-app/main/install.sh | sh</code>
+            <button class="copy-btn" onclick="copyInstallCmd(this)" title="Copy command">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+          </div>
+          <p class="terminal-hint" data-i18n="terminal_hint">Paste in Terminal to install without macOS security blocks</p>
+        </div>
         <a href="#features" class="btn btn-ghost">
           <span data-i18n="btn_learn">See how it works</span>
         </a>
@@ -670,11 +742,17 @@
 
   <section class="cta-band">
     <h2 class="serif reveal" data-i18n="cta_title">Give your focus a home.</h2>
-    <div class="buttons reveal">
-      <a href="./downloads/pomi.dmg" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-        <span data-i18n="btn_download">Download for Mac</span>
-      </a>
+    <div class="install-section reveal">
+      <div class="terminal-install">
+        <div class="terminal-box">
+          <span class="prompt">$</span>
+          <code>curl -fsSL https://raw.githubusercontent.com/rios-pedro/pomi-app/main/install.sh | sh</code>
+          <button class="copy-btn" onclick="copyInstallCmd(this)" title="Copy command">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+        </div>
+        <p class="terminal-hint" data-i18n="terminal_hint">Paste in Terminal to install without macOS security blocks</p>
+      </div>
     </div>
   </section>
 
@@ -728,6 +806,15 @@
   </footer>
 
   <script>
+    function copyInstallCmd(btn) {
+      var cmd = 'curl -fsSL https://raw.githubusercontent.com/rios-pedro/pomi-app/main/install.sh | sh';
+      navigator.clipboard.writeText(cmd).then(function() {
+        var originalIcon = btn.innerHTML;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        setTimeout(function() { btn.innerHTML = originalIcon; }, 2000);
+      });
+    }
+
     var translations = {
       en: {
         nav_features: 'Features',
@@ -735,9 +822,9 @@
         eyebrow: 'For macOS',
         hero_title: 'Focus, without <em>the noise</em>.',
         hero_description: 'Pomi is a Pomodoro timer that lives quietly in your menu bar. No dock icon, no clutter, no accounts — just time, kept honestly.',
-        btn_download: 'Download for Mac',
         btn_learn: 'See how it works',
         hero_meta: 'macOS 12+ · Free · No account required',
+        terminal_hint: 'Paste in Terminal to install without macOS security blocks',
         mockup_label: 'Focus session',
         philosophy_quote: '"A good timer isn\'t seen. It\'s felt — a quiet pulse in the corner of your day, asking nothing of you but attention."',
         philosophy_sig: '— the idea behind Pomi',
@@ -772,9 +859,9 @@
         eyebrow: 'Para macOS',
         hero_title: 'Foco, sem <em>o ruído</em>.',
         hero_description: 'Pomi é um timer Pomodoro que vive discretamente na sua barra de menu. Sem ícone no dock, sem bagunça, sem contas — só tempo, medido com honestidade.',
-        btn_download: 'Baixar para Mac',
         btn_learn: 'Ver como funciona',
         hero_meta: 'macOS 12+ · Grátis · Sem necessidade de conta',
+        terminal_hint: 'Cole no Terminal para instalar e evitar o bloqueio do macOS',
         mockup_label: 'Sessão de foco',
         philosophy_quote: '"Um bom timer não se vê. Se sente — um pulso quieto no canto do seu dia, que não pede nada além de atenção."',
         philosophy_sig: '— a ideia por trás do Pomi',
